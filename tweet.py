@@ -8,7 +8,7 @@ class Tweet(object):
 			try:
 				api = "https://publish.twitter.com/oembed?url={}".format(url)
 				response = requests.get(api)
-				return response.json()['html']
+				return response.json()['html'], url.split("/")[-1]
 			except:
 				print("Tweet not found. Trying again.", url)
 				if tries < 10:
@@ -16,8 +16,7 @@ class Tweet(object):
 					return find_next_tweet(tries+1, "https://twitter.com/i/status/{}".format(tweet_id))
 				else:
 					return f"<blockquote class='missing'>This tweet {url} is no longer available.</blockquote>"
-		self.text = find_next_tweet(0)
-		self.tweet_id = url.split("/")[-1]
+		self.text, self.tweet_id = find_next_tweet(0)
 
 	def _repr_html_(self):
 		return self.text
