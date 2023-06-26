@@ -39,7 +39,7 @@ with col2:
         st.session_state.music = ""
         st.session_state.animal = "Yok"
 
-    print({k:v for k,v in st.session_state.items() if k != "tweet_ids"})
+    #print({k:v for k,v in st.session_state.items() if k != "tweet_ids"})
     col1, col2 = st.columns(2)
     with col1:
         title = st.text_input("Başlık", key="title", placeholder="Tepki Başlığı")
@@ -57,4 +57,11 @@ with col2:
             st.success("Kaydedildi Sırada ki tweet'e geçebilirsiniz.")
         
         st.button("Sonraki Tweet", key="next", type="secondary", use_container_width=True)
+    
+    with st.expander("Tepkide var seçeneklerde yoksa buraya tıklayın"):
+        add_type = st.selectbox("Tip", ["Kişi", "Etiket", "Film - Dizi - Program - YT kanalı", "Spor", "Hayvan"], key="add_type", help="Ekleme yapmak istediğiniz seçeneği seçin.", label_visibility="collapsed")
+        add_input = st.text_input("Değer", key="add_input", placeholder=f"Eklemek istediğiniz {add_type} girin.", help=f"{add_type} adını girin.", label_visibility="collapsed")
+        
+        if st.button("Ekle", key="add", type="primary", use_container_width=True):
+            st.success(f"{add_input} ismindeki {add_type} eklendi")
 
