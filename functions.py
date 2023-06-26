@@ -1,22 +1,9 @@
 
+import os
 
-people = ["Elon Musk", "Bill Gates", "Steve Jobs"]
-tags = ["edit", "kpop", "tepki", "politik", "ekonomi"]
-programs = ["Yok", "Kurtlar Vadisi", "Selena"]
-sports = ["Yok", "Futbol", "Basketbol", "Tenis"]
-animals = ["Yok", "kedi", "köpek", "kuş", "balık", "tavşan", "koyun", "inek", "at", "koyun", "kuzu", "karga", "kartal", "tavşan", "karga", "kartal", "tavşan", "goril", "maymun"]
-
-def get_people():
-    return people
-
-def get_tags():
-    return tags
-
-def get_programs():
-    return programs
-
-def get_sports():
-    return sports
-
-def get_animals():
-    return animals
+def split_lines(folder_name):
+    for filename in os.listdir(os.path.join("data", folder_name)):
+        with open(os.path.join("data", folder_name, filename), encoding="utf8") as f:
+            lines = f.read().splitlines()
+            for line in lines:
+                yield line
