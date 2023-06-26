@@ -20,5 +20,3 @@ def get_sports():
 
 def get_animals():
     return animals
-
-
