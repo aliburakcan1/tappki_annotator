@@ -1,5 +1,6 @@
 
 import os
+from pymongo.mongo_client import MongoClient
 
 def split_lines(folder_name):
     for filename in os.listdir(os.path.join("data", folder_name)):
@@ -7,3 +8,15 @@ def split_lines(folder_name):
             lines = f.read().splitlines()
             for line in lines:
                 yield line
+
+def write_to_db(username, password, database, collection):
+
+    uri = f"mongodb+srv://{username}:{password}@{database}.mongodb.net/?retryWrites=true&w=majority"
+
+    # Create a new client and connect to the server
+    client = MongoClient(uri)
+
+    db = client.tepki
+    annotation = db.annotation
+
+    annotation.insert_one(collection)

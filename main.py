@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 from tweet import Tweet
-from functions import split_lines
+from functions import split_lines, write_to_db
 st.set_page_config(layout="wide")
 
 if "tweet_ids" not in st.session_state:
@@ -21,6 +21,8 @@ if "list_elements" not in st.session_state:
     st.session_state.list_elements = multiselect_dict
 
 #print({k:v for k,v in st.session_state.items() if k != "tweet_ids"})
+
+
 
 col1, col2 = st.columns(2)
 
@@ -81,7 +83,7 @@ with col2:
         music = st.text_input("Müzik", key="music", placeholder="Müzik", help="Tepkinin içinde geçen müzik varsa yazın.")
     
         if st.button("Tepkiyi Kaydet", key="save", type="primary", use_container_width=True):
-            print({"tweet_id": st.session_state["tweet_id"], "title": title, "content": content, "people": people, "tags": tags, "program": program, "music": music, "animal": animal})
+            #print({"tweet_id": st.session_state["tweet_id"], "title": title, "content": content, "people": people, "tags": tags, "program": program, "music": music, "animal": animal})
             st.success("Kaydedildi Sırada ki tweet'e geçebilirsiniz.")
         
         st.button("Sonraki Tweet", key="next", type="secondary", use_container_width=True)
@@ -96,3 +98,18 @@ with col2:
         if st.button("Ekle", key="add", type="primary", use_container_width=True):
             st.success(f"{add_input} ismindeki {add_type} eklendi")
 
+
+if "save" in st.session_state:
+    if st.session_state.save:
+        write_to_db(
+                username=st.secrets["username"],
+                password=st.secrets["password"],
+                database=st.secrets["database"],
+                collection={
+                    "tweet_id": st.session_state["tweet_id"], 
+                    "title": title, "content": content, 
+                    "people": people, "tags": tags, 
+                    "program": program, "music": music, 
+                    "animal": animal, "sport": sport
+                    }
+            )
