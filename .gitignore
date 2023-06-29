@@ -1,4 +1,6 @@
 .env
+.transcribe_env
+transcribe.*
 __pycache__
 .env.*
 .streamlit
