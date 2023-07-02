@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 from tweet import Tweet
-from functions import split_lines, write_to_db
+from functions import split_lines, write_to_db, find_record_by_id
 st.set_page_config(layout="wide")
 
 if "tweet_ids" not in st.session_state:
@@ -73,7 +73,18 @@ with col2:
                 st.error("Bir hata oluştu")
     with col1:
         title = st.text_input("Başlık", key="title", placeholder="Tepki Başlığı")
-        content = st.text_area("İçerik", key="content", placeholder="Tepkinin içinde geçen tüm cümleyi/cümleleri yazın.")
+        video_labels = find_record_by_id(
+                            username=st.secrets["username"],
+                            password=st.secrets["password"],
+                            database=st.secrets["database"],
+                            tweet_id=st.session_state["tweet_id"]
+                            )
+        print("tweet_id", st.session_state.tweet_id, "video_labels", video_labels)
+        if video_labels:
+            st.session_state["content"] = video_labels["content"]
+            content = st.text_area("İçerik", value=st.session_state["content"], key="content")
+        else:
+            content = st.text_area("İçerik", key="content", placeholder="Tepkinin içinde geçen tüm cümleyi/cümleleri yazın.")
         people = st.multiselect("Kişiler", list_elements["people"], key="people", help="Tepkinin içinde varsa fenomenleri/ünlüleri seçin.")
         tags = st.multiselect("Etiketler", list_elements["tags"], key="tags", help="Tepki için en uygun olan etiketleri seçin.")
     with col2:

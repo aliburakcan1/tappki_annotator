@@ -4,3 +4,4 @@ transcribe.*
 __pycache__
 .env.*
 .streamlit
+audio.wav
