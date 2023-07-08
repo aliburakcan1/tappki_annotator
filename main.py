@@ -40,14 +40,27 @@ with col1:
 
 with col2:
     if new_tweet:
-        st.session_state.title = ""
-        st.session_state.content = ""
-        st.session_state.people = []
-        st.session_state.tags = []
-        st.session_state.program = "-"
-        st.session_state.sport = "-"
-        st.session_state.music = ""
-        st.session_state.animal = "-"
+        
+        video_labels = find_record_by_id(
+                            username=st.secrets["username"],
+                            password=st.secrets["password"],
+                            database=st.secrets["database"],
+                            tweet_id=st.session_state["tweet_id"]
+                            )
+        print("tweet_id", st.session_state.tweet_id, "video_labels", video_labels)
+        if not video_labels:
+            video_labels = dict(
+                title="",
+                content="",
+                people=[],
+                tags=[],
+                program="-",
+                sport="-",
+                animal="-",
+                music=""
+            )
+        for k,v in video_labels.items():
+            st.session_state[k] = v
 
     #print({k:v for k,v in st.session_state.items() if k != "tweet_ids"})
     col1, col2 = st.columns(2)
@@ -72,19 +85,15 @@ with col2:
             else:
                 st.error("Bir hata oluştu")
     with col1:
+        
+
+        #for k,v in video_labels.items():
+        #    st.session_state[k] = v
+        #for k,v in st.session_state.items():
+        #    if k not in ["tweet_ids", "tweet_id", "list_elements"]:
+        #        print(k, v)
         title = st.text_input("Başlık", key="title", placeholder="Tepki Başlığı")
-        video_labels = find_record_by_id(
-                            username=st.secrets["username"],
-                            password=st.secrets["password"],
-                            database=st.secrets["database"],
-                            tweet_id=st.session_state["tweet_id"]
-                            )
-        print("tweet_id", st.session_state.tweet_id, "video_labels", video_labels)
-        if video_labels:
-            st.session_state["content"] = video_labels["content"]
-            content = st.text_area("İçerik", value=st.session_state["content"], key="content")
-        else:
-            content = st.text_area("İçerik", key="content", placeholder="Tepkinin içinde geçen tüm cümleyi/cümleleri yazın.")
+        content = st.text_area("İçerik", key="content", placeholder="Tepkinin içinde geçen tüm cümleyi/cümleleri yazın.")
         people = st.multiselect("Kişiler", list_elements["people"], key="people", help="Tepkinin içinde varsa fenomenleri/ünlüleri seçin.")
         tags = st.multiselect("Etiketler", list_elements["tags"], key="tags", help="Tepki için en uygun olan etiketleri seçin.")
     with col2:
