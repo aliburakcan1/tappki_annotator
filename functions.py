@@ -22,7 +22,7 @@ def write_to_db(username, password, database, collection):
     annotation.insert_one(collection)
 
 
-def find_all_ids(username, password, database):
+def find_all_ids(username, password, database, collection):
 
     uri = f"mongodb+srv://{username}:{password}@{database}.mongodb.net/?retryWrites=true&w=majority"
 
@@ -30,11 +30,11 @@ def find_all_ids(username, password, database):
     client = MongoClient(uri)
     
     db = client.tepki
-    annotation = db.video
+    annotation = db[collection]
 
-    ids = annotation.find({}, {"tweet_id": 1, "_id": 0})
+    ids = annotation.find({}, {"status": 1, "_id": 0})
 
-    return [id["tweet_id"] for id in ids]
+    return list(set([id["status"] for id in ids]))
 
 def find_record_by_id(username, password, database, tweet_id):
 

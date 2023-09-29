@@ -1,11 +1,17 @@
 import streamlit as st
 import random
 from tweet import Tweet
-from functions import split_lines, write_to_db, find_record_by_id
+from functions import split_lines, write_to_db, find_record_by_id, find_all_ids
 st.set_page_config(layout="wide")
 
 if "tweet_ids" not in st.session_state:
-    st.session_state.tweet_ids = list(split_lines("tweet_ids"))
+    #st.session_state.tweet_ids = list(split_lines("tweet_ids"))
+    st.session_state.tweet_ids = find_all_ids(
+                            username=st.secrets["username"],
+                            password=st.secrets["password"],
+                            database=st.secrets["database"],
+                            collection="statuses"
+                            )
 
 if "tweet_id" not in st.session_state:
     st.session_state.tweet_id = random.choice(st.session_state.tweet_ids)
