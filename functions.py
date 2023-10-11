@@ -31,10 +31,11 @@ def find_all_ids(username, password, database, collection):
     
     db = client.tepki
     annotation = db[collection]
-
+    videos = db["video"]
+    annotated_videos = videos.find({"title": {"$ne": ""}})
+    annotated_video_ids = [video["tweet_id"] for video in annotated_videos]
     ids = annotation.find({}, {"status": 1, "_id": 0})
-
-    return list(set([id["status"] for id in ids]))
+    return list(set([id["status"] for id in ids if id["status"] not in annotated_video_ids]))
 
 def find_record_by_id(username, password, database, tweet_id):
 
