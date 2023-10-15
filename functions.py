@@ -9,17 +9,20 @@ def split_lines(folder_name):
             for line in lines:
                 yield line
 
-def write_to_db(username, password, database, collection):
+def get_collection(username, password, database, db_name, collection_name):
 
     uri = f"mongodb+srv://{username}:{password}@{database}.mongodb.net/?retryWrites=true&w=majority"
 
     # Create a new client and connect to the server
     client = MongoClient(uri)
 
-    db = client.tepki
-    annotation = db.video
+    db = client[db_name]
+    collection = db[collection_name]
 
-    annotation.insert_one(collection)
+    return collection
+
+def write_to_db(username, password, database, db_name, collection_name, record):
+    get_collection(username, password, database, db_name, collection_name).insert_one(record)
 
 
 def find_all_ids(username, password, database):
@@ -36,16 +39,11 @@ def find_all_ids(username, password, database):
 
     return [id["tweet_id"] for id in ids]
 
-def find_record_by_id(username, password, database, tweet_id):
+def find_record_by_id(username, password, database, db_name, collection_name, tweet_id):
 
-    uri = f"mongodb+srv://{username}:{password}@{database}.mongodb.net/?retryWrites=true&w=majority"
-
-    # Create a new client and connect to the server
-    client = MongoClient(uri)
-    
-    db = client.tepki
-    annotation = db.video
-
-    record = annotation.find_one({"tweet_id": tweet_id})
-
+    record = get_collection(username, password, database, db_name, collection_name).find_one({"tweet_id": tweet_id})
     return record
+
+def is_exist(username, password, database, db_name, collection_name, tweet_id):
+    record = get_collection(username, password, database, db_name, collection_name).find_one({"tweet_id": tweet_id})
+    return True if record else False
