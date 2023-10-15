@@ -1,11 +1,29 @@
 import streamlit as st
 import random
 from tweet import Tweet
-from functions import split_lines, write_to_db, find_record_by_id
+from functions import split_lines, write_to_db, is_exist, get_collection
 st.set_page_config(layout="wide")
 
 if "tweet_ids" not in st.session_state:
-    st.session_state.tweet_ids = list(split_lines("tweet_ids"))
+    tweet_reactions = get_collection(
+        username=st.secrets["username"],
+        password=st.secrets["password"],
+        database=st.secrets["database"],
+        db_name="reaction",
+        collection_name="tweet"
+    )
+    reaction_statuses = [tweet["id"] for tweet in tweet_reactions.find({}, {"id": 1, "_id": 0})]
+    annotated_tweets = get_collection(
+        username=st.secrets["username"],
+        password=st.secrets["password"],
+        database=st.secrets["database"],
+        db_name="reaction",
+        collection_name="annotation"
+    )
+    annotated_statuses = [tweet["tweet_id"] for tweet in annotated_tweets.find({}, {"tweet_id": 1, "_id": 0})]
+    st.session_state.annotated_statuses = annotated_statuses
+    st.session_state.tweet_ids = list(set(reaction_statuses) - set(annotated_statuses))
+
 
 if "tweet_id" not in st.session_state:
     st.session_state.tweet_id = random.choice(st.session_state.tweet_ids)
@@ -40,16 +58,7 @@ with col1:
 
 with col2:
     if new_tweet:
-        
-        video_labels = find_record_by_id(
-                            username=st.secrets["username"],
-                            password=st.secrets["password"],
-                            database=st.secrets["database"],
-                            tweet_id=st.session_state["tweet_id"]
-                            )
-        print("tweet_id", st.session_state.tweet_id, "video_labels", video_labels)
-        if not video_labels:
-            video_labels = dict(
+        video_labels = dict(
                 title="",
                 content="",
                 people=[],
@@ -59,8 +68,17 @@ with col2:
                 animal="-",
                 music=""
             )
+
         for k,v in video_labels.items():
             st.session_state[k] = v
+        
+        if is_exist(username=st.secrets["username"],
+                    password=st.secrets["password"],
+                    database=st.secrets["database"],
+                    db_name="reaction",
+                    collection_name="annotation",
+                    tweet_id=st.session_state["tweet_id"]):
+            st.error("Bu tweet daha önce etiketlenmiş. Lütfen sonraki tweet'e geçin.")
 
     #print({k:v for k,v in st.session_state.items() if k != "tweet_ids"})
     col1, col2 = st.columns(2)
@@ -125,7 +143,9 @@ if "save" in st.session_state:
                 username=st.secrets["username"],
                 password=st.secrets["password"],
                 database=st.secrets["database"],
-                collection={
+                db_name="reaction",
+                collection_name="annotation",
+                record={
                     "tweet_id": st.session_state["tweet_id"], 
                     "title": title, "content": content, 
                     "people": people, "tags": tags, 
@@ -133,3 +153,7 @@ if "save" in st.session_state:
                     "animal": animal, "sport": sport
                     }
             )
+        
+
+st.error(f"Etiketlenmiş tweet sayısı: {len(st.session_state.annotated_statuses)}")
+st.error(f"Etiketlenmemiş tweet sayısı: {len(st.session_state.tweet_ids)}")
