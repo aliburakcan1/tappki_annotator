@@ -139,20 +139,23 @@ with col2:
 
 if "save" in st.session_state:
     if st.session_state.save:
-        write_to_db(
-                username=st.secrets["username"],
-                password=st.secrets["password"],
-                database=st.secrets["database"],
-                db_name="reaction",
-                collection_name="annotation",
-                record={
-                    "tweet_id": st.session_state["tweet_id"], 
-                    "title": title, "content": content, 
-                    "people": people, "tags": tags, 
-                    "program": program, "music": music, 
-                    "animal": animal, "sport": sport
-                    }
-            )
+        if title != "":
+            write_to_db(
+                    username=st.secrets["username"],
+                    password=st.secrets["password"],
+                    database=st.secrets["database"],
+                    db_name="reaction",
+                    collection_name="annotation",
+                    record={
+                        "tweet_id": st.session_state["tweet_id"], 
+                        "title": title, "content": content, 
+                        "people": people, "tags": tags, 
+                        "program": program, "music": music, 
+                        "animal": animal, "sport": sport
+                        }
+                )
+        else:
+            st.error("Başlık boş olamaz.")
         
 
 st.error(f"Etiketlenmiş tweet sayısı: {len(st.session_state.annotated_statuses)}")
