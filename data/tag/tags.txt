@@ -7,3 +7,4 @@ ekonomi
 spor
 sanat
 teknoloji
+askeri
