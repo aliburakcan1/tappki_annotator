@@ -4,29 +4,8 @@ from tweet import Tweet
 from functions import split_lines, write_to_db, is_exist, get_collection
 st.set_page_config(layout="wide")
 
-if "tweet_ids" not in st.session_state:
-    tweet_reactions = get_collection(
-        username=st.secrets["username"],
-        password=st.secrets["password"],
-        database=st.secrets["database"],
-        db_name="reaction",
-        collection_name="tweet"
-    )
-    reaction_statuses = [tweet["id"] for tweet in tweet_reactions.find({}, {"id": 1, "_id": 0})]
-    annotated_tweets = get_collection(
-        username=st.secrets["username"],
-        password=st.secrets["password"],
-        database=st.secrets["database"],
-        db_name="reaction",
-        collection_name="annotation"
-    )
-    annotated_statuses = [tweet["tweet_id"] for tweet in annotated_tweets.find({}, {"tweet_id": 1, "_id": 0})]
-    st.session_state.annotated_statuses = annotated_statuses
-    st.session_state.tweet_ids = list(set(reaction_statuses) - set(annotated_statuses))
-
-
 if "tweet_id" not in st.session_state:
-    st.session_state.tweet_id = random.choice(st.session_state.tweet_ids)
+    st.session_state.tweet_id = "1"
 
 if "list_elements" not in st.session_state:
     multiselect_dict = {
@@ -38,47 +17,27 @@ if "list_elements" not in st.session_state:
     }
     st.session_state.list_elements = multiselect_dict
 
-#print({k:v for k,v in st.session_state.items() if k != "tweet_ids"})
-
-
+#if "get_tweet" not in st.session_state:
+#    st.session_state.get_tweet = False
 
 col1, col2 = st.columns(2)
 
 with col1:
-    new_tweet = st.session_state.next if "next" in st.session_state else False
-    if new_tweet:
-        current_tweet_id = random.choice(st.session_state.tweet_ids)
-        tweet = Tweet("https://twitter.com/i/status/{}".format(current_tweet_id), tweet_ids=st.session_state.tweet_ids)
-        current_tweet_id = tweet.get_tweet_id()
-        tweet.component()
-        st.session_state.tweet_id = current_tweet_id
-    else:
-        Tweet("https://twitter.com/i/status/{}".format(st.session_state.tweet_id), st.session_state.tweet_ids).component()
-        
-
-with col2:
-    if new_tweet:
-        video_labels = dict(
-                title="",
-                content="",
-                people=[],
-                tags=[],
-                program="-",
-                sport="-",
-                animal="-",
-                music=""
-            )
-
-        for k,v in video_labels.items():
-            st.session_state[k] = v
-        
+    st.text_input("Tweet ID", key="tweet_id")
+    st.button("Tweet'i Getir", key="get_tweet", type="primary", use_container_width=True)
+    if st.session_state.tweet_id:
         if is_exist(username=st.secrets["username"],
                     password=st.secrets["password"],
                     database=st.secrets["database"],
                     db_name="reaction",
                     collection_name="annotation",
                     tweet_id=st.session_state["tweet_id"]):
-            st.error("Bu tweet daha önce etiketlenmiş. Lütfen sonraki tweet'e geçin.")
+            st.error("Bu tweet daha önce etiketlenmiş.")
+        else:
+            Tweet("https://twitter.com/i/status/{}".format(st.session_state.tweet_id)).component()
+        
+
+with col2:
 
     #print({k:v for k,v in st.session_state.items() if k != "tweet_ids"})
     col1, col2 = st.columns(2)
@@ -124,7 +83,7 @@ with col2:
             #print({"tweet_id": st.session_state["tweet_id"], "title": title, "content": content, "people": people, "tags": tags, "program": program, "music": music, "animal": animal})
             st.success("Kaydedildi Sırada ki tweet'e geçebilirsiniz.")
         
-        st.button("Sonraki Tweet", key="next", type="secondary", use_container_width=True)
+        #st.button("Sonraki Tweet", key="next", type="secondary", use_container_width=True)
     
     with st.expander("Tepkide var seçeneklerde yoksa buraya tıklayın"):
         type_list = ["Kişi", "Etiket", "Film - Dizi - Program - YT kanalı", "Spor", "Hayvan"]
@@ -139,24 +98,29 @@ with col2:
 
 if "save" in st.session_state:
     if st.session_state.save:
-        if title != "":
-            write_to_db(
-                    username=st.secrets["username"],
+        if is_exist(username=st.secrets["username"],
                     password=st.secrets["password"],
                     database=st.secrets["database"],
                     db_name="reaction",
                     collection_name="annotation",
-                    record={
-                        "tweet_id": st.session_state["tweet_id"], 
-                        "title": title, "content": content, 
-                        "people": people, "tags": tags, 
-                        "program": program, "music": music, 
-                        "animal": animal, "sport": sport
-                        }
-                )
+                    tweet_id=st.session_state["tweet_id"]):
+            st.error("Bu tweeti daha önce etiketlemişsiniz.")
         else:
-            st.error("Başlık boş olamaz.")
+            if title != "":
+                write_to_db(
+                        username=st.secrets["username"],
+                        password=st.secrets["password"],
+                        database=st.secrets["database"],
+                        db_name="reaction",
+                        collection_name="annotation",
+                        record={
+                            "tweet_id": st.session_state["tweet_id"], 
+                            "title": title, "content": content, 
+                            "people": people, "tags": tags, 
+                            "program": program, "music": music, 
+                            "animal": animal, "sport": sport
+                            }
+                    )
+            else:
+                st.error("Başlık boş olamaz.")
         
-
-st.error(f"Etiketlenmiş tweet sayısı: {len(st.session_state.annotated_statuses)}")
-st.error(f"Etiketlenmemiş tweet sayısı: {len(st.session_state.tweet_ids)}")
