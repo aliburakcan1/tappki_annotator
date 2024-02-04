@@ -1,6 +1,9 @@
 
 import os
 from pymongo.mongo_client import MongoClient
+import time
+import requests
+from constant import fxtwitter_headers
 
 def split_lines(folder_name):
     for filename in os.listdir(os.path.join("data", folder_name)):
@@ -22,6 +25,30 @@ def get_collection(username, password, database, db_name, collection_name):
     return collection
 
 def write_to_db(username, password, database, db_name, collection_name, record):
+    tweet_status = record["tweet_id"]
+    try:
+        fxtwitter_response = requests.get(f"https://api.fxtwitter.com/i/status/{tweet_status}", headers=fxtwitter_headers, verify=False)
+        json_response = fxtwitter_response.json()
+        tweet_download_link = json_response["tweet"]["media"]["videos"][0]["url"]
+        tweet_timestamp = json_response["tweet"]["created_timestamp"]
+        tweet_views = json_response["tweet"]["views"]
+        tweet_sensitive = json_response["tweet"]["possibly_sensitive"]
+        tweet_media_duration = json_response["tweet"]["media"]["videos"][0]["duration"]
+
+        get_collection(username, password, database, db_name, "tweet").insert_one(
+            {"id": tweet_status, 
+                "timestamp": tweet_timestamp, 
+                "download_link": tweet_download_link, 
+                "views": tweet_views, 
+                "sensitive": tweet_sensitive, 
+                "media_duration": tweet_media_duration, 
+                "inserted_at": int(time.time()),
+                "source": "single_tweet",
+                "is_deleted": False
+                }
+                )
+    except:
+        pass
     get_collection(username, password, database, db_name, collection_name).insert_one(record)
 
 
